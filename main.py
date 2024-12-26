@@ -1,4 +1,5 @@
 import random
+from concurrent.futures import ThreadPoolExecutor
 
 def generate_array(size, min_value, max_value, bool=False):
     """
@@ -140,19 +141,23 @@ def main():
         choice = input("Выберите пункт меню: ")
 
         if choice == '1':
-            array = create_array(True)
+            with ThreadPoolExecutor() as executor:
+                array = executor.submit(create_array, True).result()
+            # array = create_array(True)
             target_sum = int(input("Введите число для проверки суммы подмассивов: "))
             result = count_subarrays_with_sum(array, target_sum)
             print(f"Количество подмассивов с суммой {target_sum}: {result}")
         elif choice == '2':
-            array1 = create_array()
-            array2 = create_array()
+            with ThreadPoolExecutor() as executor:
+                array1 = executor.submit(create_array).result()
+                array2 = executor.submit(create_array).result()
             result = count_common_elements(array1, array2)
             print(f"Количество общих чисел: {result}")
         elif choice == '3':
-            array1 = create_array()
-            array2 = create_array()
-            array3 = create_array()
+            with ThreadPoolExecutor() as executor:
+                array1 = executor.submit(create_array).result()
+                array2 = executor.submit(create_array).result()
+                array3 = executor.submit(create_array).result()
             results = can_form_number(array1, array2, array3)
             for i, result in enumerate(results):
                 print(f"Число {array3[i]} может быть получено: {result}")
@@ -162,4 +167,5 @@ def main():
         else:
             print("Неверный выбор. Попробуйте снова.")
 
-main()
+with ThreadPoolExecutor() as executor:
+    executor.submit(main)
