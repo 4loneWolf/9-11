@@ -34,8 +34,24 @@ def create_array(bool=False):
         print("Неверный выбор. Попробуйте снова.")
         return create_array(bool)
 
+def count_subarrays_with_sum(array, target_sum):
+    count = 0
+    current_sum = 0
+    start = 0
+    for mainarray in array:
+        for end in range(len(mainarray)):
+            current_sum += mainarray[end]
+            while current_sum > target_sum and start <= end:
+                current_sum -= mainarray[start]
+                start += 1
+            if current_sum == target_sum:
+                count += 1
+    return count
+
 def main():
-    print(create_array())
-    print(create_array(True))
+    array1 = generate_array(5, 1, 10, True)
+    num = 5
+    print(count_subarrays_with_sum(array1, num))
+
 
 main()
