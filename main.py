@@ -34,24 +34,21 @@ def create_array(bool=False):
         print("Неверный выбор. Попробуйте снова.")
         return create_array(bool)
 
-def count_subarrays_with_sum(array, target_sum):
-    count = 0
-    current_sum = 0
-    start = 0
-    for mainarray in array:
-        for end in range(len(mainarray)):
-            current_sum += mainarray[end]
-            while current_sum > target_sum and start <= end:
-                current_sum -= mainarray[start]
-                start += 1
-            if current_sum == target_sum:
-                count += 1
-    return count
+def count_common_elements(array1, array2):
+    def is_reversed(num1, num2):
+        return str(num1)[::-1] == str(num2)
+
+    common_count = 0
+    for num1 in array1:
+        for num2 in array2:
+            if num1 == num2 or is_reversed(num1, num2):
+                common_count += 1
+                break
+    return common_count
 
 def main():
-    array1 = generate_array(5, 1, 10, True)
-    num = 5
-    print(count_subarrays_with_sum(array1, num))
-
+    array1 = generate_array(5, 1, 10)
+    array2 = generate_array(5, 1, 10)
+    print(count_common_elements(array1, array2))
 
 main()
