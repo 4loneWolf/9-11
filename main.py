@@ -46,9 +46,24 @@ def count_common_elements(array1, array2):
                 break
     return common_count
 
+def can_form_number(array1, array2, array3):
+    def can_form(num1, num2, target):
+        return num1 + num2 == target or num1 - num2 == target or num2 - num1 == target or num1 * num2 == target or (num2 != 0 and num1 / num2 == target) or (num1 != 0 and num2 / num1 == target)
+    print(array2)
+    results = []
+    for i in range(len(array3)):
+        num1 = array1[i]
+        num2 = array2[i]
+        target = array3[i]
+        results.append(can_form(num1, num2, target))
+    return results
+
 def main():
     array1 = generate_array(5, 1, 10)
     array2 = generate_array(5, 1, 10)
-    print(count_common_elements(array1, array2))
+    array3 = generate_array(5, 1, 10)
+    results = can_form_number(array1, array2, array3)
+    for i, result in enumerate(results):
+        print(f"Число {array3[i]} может быть получено: {result}")
 
 main()
