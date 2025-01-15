@@ -56,18 +56,18 @@ def create_array(bool=False):
         print("Неверный выбор. Попробуйте снова.")
         return create_array(bool)
 
-def count_subarrays_with_sum(array, target_sum):
+def count_subarrays_with_sum_worker(subarray, target_sum):
     """
-    Подсчитывает количество подмассивов, сумма элементов которых равна заданному числу.
+    Рабочая функция для подсчета подмассивов с суммой, равной target_sum.
 
-    :param array: Массив подмассивов.
-    :param target_sum: Заданное число для проверки суммы подмассивов.
+    :param subarray: Подмассив для обработки.
+    :param target_sum: Заданное значение суммы.
     :return: Количество подмассивов с заданной суммой.
     """
     count = 0
     current_sum = 0
     start = 0
-    for mainarray in array:
+    for mainarray in subarray:
         for end in range(len(mainarray)):
             current_sum += mainarray[end]
             while current_sum > target_sum and start <= end:
@@ -77,12 +77,29 @@ def count_subarrays_with_sum(array, target_sum):
                 count += 1
     return count
 
-def count_common_elements(array1, array2):
+def count_subarrays_with_sum(array, target_sum):
     """
-    Подсчитывает количество общих чисел в двух массивах, включая перевернутые версии.
+    Подсчитывает количество подмассивов, сумма элементов которых равна заданному числу,
+    используя многопоточность через ThreadPoolExecutor.
 
-    :param array1: Первый массив.
-    :param array2: Второй массив.
+    :param array: Массив подмассивов для обработки.
+    :param target_sum: Заданное число для проверки суммы подмассивов.
+    :return: Количество подмассивов с заданной суммой.
+    """
+    num_threads = 4  # Количество потоков
+    subarrays = [array[i::num_threads] for i in range(num_threads)]  # Разделение массива на части
+
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        results = list(executor.map(lambda subarray: count_subarrays_with_sum_worker(subarray, target_sum), subarrays))
+
+    return sum(results)
+
+def count_common_elements_worker(array1_part, array2):
+    """
+    Рабочая функция для подсчета общих элементов в двух массивах, включая перевернутые числа.
+
+    :param array1_part: Часть первого массива для обработки.
+    :param array2: Второй массив для сравнения.
     :return: Количество общих чисел.
     """
     def is_reversed(num1, num2):
@@ -96,21 +113,39 @@ def count_common_elements(array1, array2):
         return str(num1)[::-1] == str(num2)
 
     common_count = 0
-    for num1 in array1:
+    for num1 in array1_part:
         for num2 in array2:
             if num1 == num2 or is_reversed(num1, num2):
                 common_count += 1
                 break
     return common_count
 
-def can_form_number(array1, array2, array3):
+def count_common_elements(array1, array2):
     """
-    Проверяет, можно ли получить число из третьего массива арифметическими преобразованиями с числами из двух других массивов.
+    Подсчитывает количество общих чисел в двух массивах, включая перевернутые версии,
+    используя многопоточность через ThreadPoolExecutor.
 
     :param array1: Первый массив.
     :param array2: Второй массив.
-    :param array3: Третий массив.
-    :return: Список результатов проверки.
+    :return: Количество общих чисел.
+    """
+    num_threads = 4  # Количество потоков
+    array1_parts = [array1[i::num_threads] for i in range(num_threads)]  # Разделение массива 1 на части
+
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        results = list(executor.map(lambda part: count_common_elements_worker(part, array2), array1_parts))
+
+    return sum(results)
+
+def can_form_number_worker(array1_part, array2_part, array3_part):
+    """
+    Рабочая функция для проверки, можно ли получить число из третьего массива арифметическими преобразованиями
+    с числами из двух других массивов.
+
+    :param array1_part: Часть первого массива для обработки.
+    :param array2_part: Часть второго массива для обработки.
+    :param array3_part: Часть третьего массива для проверки.
+    :return: Список результатов для части массива.
     """
     def can_form(num1, num2, target):
         """
@@ -122,14 +157,32 @@ def can_form_number(array1, array2, array3):
         :return: True, если можно получить число target, иначе False.
         """
         return num1 + num2 == target or num1 - num2 == target or num2 - num1 == target or num1 * num2 == target or (num2 != 0 and num1 / num2 == target) or (num1 != 0 and num2 / num1 == target)
-    print(array2)
-    results = []
-    for i in range(len(array3)):
-        num1 = array1[i]
-        num2 = array2[i]
-        target = array3[i]
-        results.append(can_form(num1, num2, target))
+
+    results = [can_form(array1_part[i], array2_part[i], array3_part[i]) for i in range(len(array3_part))]
     return results
+
+def can_form_number(array1, array2, array3):
+    """
+    Проверяет, можно ли получить число из третьего массива арифметическими преобразованиями
+    с числами из двух других массивов, используя многопоточность через ThreadPoolExecutor.
+
+    :param array1: Первый массив.
+    :param array2: Второй массив.
+    :param array3: Третий массив.
+    :return: Список результатов проверки.
+    """
+    num_threads = 4  # Количество потоков
+    array1_parts = [array1[i::num_threads] for i in range(num_threads)]  # Разделение массива 1 на части
+    array2_parts = [array2[i::num_threads] for i in range(num_threads)]  # Разделение массива 2 на части
+    array3_parts = [array3[i::num_threads] for i in range(num_threads)]  # Разделение массива 3 на части
+
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        results = list(executor.map(lambda p1, p2, p3: can_form_number_worker(p1, p2, p3), array1_parts, array2_parts, array3_parts))
+    print(results)
+    # Объединяем все результаты из частей
+    final_results = [result for sublist in results for result in sublist]
+    print(final_results)
+    return final_results
 
 def main():
     while True:
@@ -141,23 +194,19 @@ def main():
         choice = input("Выберите пункт меню: ")
 
         if choice == '1':
-            with ThreadPoolExecutor() as executor:
-                array = executor.submit(create_array, True).result()
-            # array = create_array(True)
+            array = create_array(True)
             target_sum = int(input("Введите число для проверки суммы подмассивов: "))
             result = count_subarrays_with_sum(array, target_sum)
             print(f"Количество подмассивов с суммой {target_sum}: {result}")
         elif choice == '2':
-            with ThreadPoolExecutor() as executor:
-                array1 = executor.submit(create_array).result()
-                array2 = executor.submit(create_array).result()
+            array1 = create_array()
+            array2 = create_array()
             result = count_common_elements(array1, array2)
             print(f"Количество общих чисел: {result}")
         elif choice == '3':
-            with ThreadPoolExecutor() as executor:
-                array1 = executor.submit(create_array).result()
-                array2 = executor.submit(create_array).result()
-                array3 = executor.submit(create_array).result()
+            array1 = create_array()
+            array2 = create_array()
+            array3 = create_array()
             results = can_form_number(array1, array2, array3)
             for i, result in enumerate(results):
                 print(f"Число {array3[i]} может быть получено: {result}")
@@ -167,5 +216,4 @@ def main():
         else:
             print("Неверный выбор. Попробуйте снова.")
 
-with ThreadPoolExecutor() as executor:
-    executor.submit(main)
+main()
